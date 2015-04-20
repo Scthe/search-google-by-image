@@ -9,7 +9,7 @@ describe('GoogleImagesScrapper', function(){
 
     image_title = image_title.toLowerCase();
     assert(image_title.indexOf('mona') !== -1);
-    assert(image_title.indexOf('misa') !== -1);
+    assert(image_title.indexOf('lisa') !== -1);
   });
 
   it('returns empty if image was not found', function(){
