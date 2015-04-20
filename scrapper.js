@@ -1,5 +1,5 @@
 //var x = require('casper').selectXPath;
-// var casper = require('casperjs').create(),
+// var casper = require('casper').create(),
 var url = 'https://images.google.com/';
 
 module.exports = execute;
@@ -16,13 +16,13 @@ function execute(casper, file_path, callback) {
 
   function debug(casper, num, txt) {
     console.log(num + '>' + txt);
-    //casper.capture('cap'+num+'_'+txt+'.png')
+    casper.capture('cap' + num + '_' + txt + '.png')
   }
 
   casper.start();
   casper.userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36');
 
-  console.log('--start--');
+  //console.log('--start--');
   casper.thenOpen(url);
 
   selector1 = '.gsst_a';
@@ -47,23 +47,34 @@ function execute(casper, file_path, callback) {
   });
 
   selector4 = '._gUb';
-  casper.waitForSelector(selector4, function() {
+  var text = undefined;
+  var timeout = 2000;
+
+  casper.waitForSelector('#resultStats', function() {
     debug(this, 4, 'wait_for_page_reload')
       //this.page.uploadFile(selector4, file_path);
-    var text = this.evaluate(function(selector_) {
-      //return document.querySelectorAll(selector_)
-      return (document.getElementsByClassName('_gUb')[0]).textContent
+    text = this.evaluate(function(selector_) {
+      var xs = document.getElementsByClassName('_gUb');
+      return xs === undefined || xs.length ===0  ? undefined : (xs[0]).textContent;
     }, selector4);
-
-    this.echo('>> "' + text + '"');
     callback(text);
+  }, function() {
+    debug(this, 99, 'err_wait_for_page_reload')
+    callback(undefined);
   });
 
-  casper.run(function() {
-    // WARN: THIS IS ASYNC !!!
-    //this.echo(getReturnedText());
-    //phantom.exit(1);
-    console.log('--END--');
-    casper.exit();
-  });
+  /*
+   casper.run(function() {
+    // we either have the text or not, anyway is time to end
+      this.echo('>> "' + text + '"');
+      callback(text);
+   });
+  /*
+    casper.run(function() {
+      //this.echo(getReturnedText());
+      //phantom.exit(1);
+      console.log('--END--');
+      casper.exit();
+    });
+  */
 }
