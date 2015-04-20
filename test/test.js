@@ -12,6 +12,10 @@ describe('GoogleImagesScrapper', function(){
     assert(image_title.indexOf('misa') !== -1);
   });
 
+  it('returns empty if image was not found', function(){
+    var image_title = scrapper('test/data/TheRoad1.jpg');
+    assert(image_title === undefined);
+  });
 
 });
 
