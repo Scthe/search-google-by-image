@@ -8,7 +8,7 @@ var scrapper = require('../scrapper');
 describe('GoogleImagesScrapper', function(){
 'use strict';
 
-  testWithFile('returns empty if image was not found',
+  testWithFile('finds \"Mona Lisa\"',
     'test/data/Mona_Lisa,_by_Leonardo_da_Vinci.jpg', function(imageTitle){
 
     expect(imageTitle).to.exist;
@@ -23,6 +23,7 @@ describe('GoogleImagesScrapper', function(){
 
   function testWithFile(testName,filePath, correctnesCheck){
     it(testName,function(done){
+      casper.start();
       scrapper(casper,filePath,function(imageTitle){
         correctnesCheck(imageTitle);
         done();
