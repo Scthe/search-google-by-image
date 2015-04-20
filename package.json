@@ -1,0 +1,12 @@
+{
+  "name": "google-images-scrapper",
+  "version": "0.0.0",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-mocha-casperjs": "^1.4.3",
+    "jshint-stylish": "^1.0.1",
+    "mocha": "^2.2.4"
+  }
+}
