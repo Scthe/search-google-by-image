@@ -57,7 +57,7 @@ function execute(casper, filePath, callback) {
   }
 
   function debug(casper, num, txt) {
-    console.log(num + '>' + txt);
+    // console.log(num + '>' + txt);
     // casper.capture('cap' + num + '_' + txt + '.png');
   }
 }
