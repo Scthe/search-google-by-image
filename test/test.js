@@ -8,22 +8,26 @@ var scrapper = require('../scrapper');
 describe('GoogleImagesScrapper', function(){
 'use strict';
 
-  it('finds \"Mona Lisa\"', function(done){
-    scrapper(casper,'test/data/Mona_Lisa,_by_Leonardo_da_Vinci.jpg',function(imageTitle){
-      expect(imageTitle).to.exist;
+  testWithFile('returns empty if image was not found',
+    'test/data/Mona_Lisa,_by_Leonardo_da_Vinci.jpg', function(imageTitle){
 
-      imageTitle = imageTitle.toLowerCase();
-      expect(imageTitle).to.contain('mona');
-      expect(imageTitle).to.contain('lisa');
-      done();
-    });
+    expect(imageTitle).to.exist;
+    imageTitle = imageTitle.toLowerCase();
+    expect(imageTitle).to.contain('mona');
+    expect(imageTitle).to.contain('lisa');
   });
 
-  it('returns empty if image was not found', function(done){
-    scrapper(casper,'test/data/TheRoad1.jpg',function(imageTitle){
+  testWithFile('returns empty if image was not found', 'test/data/TheRoad1.jpg', function(imageTitle){
       expect(imageTitle).to.not.exist;
-      done();
-    });
   });
+
+  function testWithFile(testName,filePath, correctnesCheck){
+    it(testName,function(done){
+      scrapper(casper,filePath,function(imageTitle){
+        correctnesCheck(imageTitle);
+        done();
+      });
+    });
+  }
 
 });
