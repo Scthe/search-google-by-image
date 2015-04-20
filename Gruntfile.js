@@ -31,6 +31,7 @@ module.exports = function(grunt) {
       all: [
         'Gruntfile.js',
         'scrapper.js',
+        'main.js',
         'test/{,*/}*.js'
       ]
     },
