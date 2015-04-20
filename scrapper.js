@@ -16,7 +16,7 @@ function execute(casper, file_path, callback) {
 
   function debug(casper, num, txt) {
     console.log(num + '>' + txt);
-    casper.capture('cap' + num + '_' + txt + '.png')
+    casper.capture('cap' + num + '_' + txt + '.png');
   }
 
   casper.start();
@@ -25,41 +25,41 @@ function execute(casper, file_path, callback) {
   //console.log('--start--');
   casper.thenOpen(url);
 
-  selector1 = '.gsst_a';
+  var selector1 = '.gsst_a';
   casper.waitForSelector(selector1, function() {
-    debug(this, 1, 'dialog_open')
+    debug(this, 1, 'dialog_open');
     this.click(selector1);
   });
 
   //casper.thenEvaluate('google.qb.ti(true);');
 
-  selector2 = '.qbtbha.qbtbtxt.qbclr';
+  var selector2 = '.qbtbha.qbtbtxt.qbclr';
   casper.waitForSelector(selector2, function() {
-    debug(this, 2, 'dialog_change_tab')
+    debug(this, 2, 'dialog_change_tab');
     this.click(selector2);
   });
 
   //<input id="qbfile" name="encoded_image" style="margin:7px 4px" type="file">
-  selector3 = 'input[id=qbfile]';
+  var selector3 = 'input[id=qbfile]';
   casper.waitForSelector(selector3, function() {
-    debug(this, 3, 'pre_file_input')
+    debug(this, 3, 'pre_file_input');
     this.page.uploadFile(selector3, file_path);
   });
 
-  selector4 = '._gUb';
-  var text = undefined;
+  var selector4 = '._gUb';
+  var text;
   var timeout = 2000;
 
   casper.waitForSelector('#resultStats', function() {
-    debug(this, 4, 'wait_for_page_reload')
+    debug(this, 4, 'wait_for_page_reload');
       //this.page.uploadFile(selector4, file_path);
     text = this.evaluate(function(selector_) {
       var xs = document.getElementsByClassName('_gUb');
-      return xs === undefined || xs.length ===0  ? undefined : (xs[0]).textContent;
+      return xs === undefined || xs.length === 0 ? undefined : (xs[0]).textContent;
     }, selector4);
     callback(text);
   }, function() {
-    debug(this, 99, 'err_wait_for_page_reload')
+    debug(this, 99, 'err_wait_for_page_reload');
     callback(undefined);
   });
 
