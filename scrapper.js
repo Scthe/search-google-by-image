@@ -55,7 +55,7 @@ function execute(casper, filePath) {
       debug(this, currentStep, stepName);
       ++currentStep;
       var googledName = this.evaluate(fToEval);
-      console.log('>>' + googledName);
+      // console.log('>>' + googledName);
       deferred.resolve({
         file: filePath,
         name: googledName

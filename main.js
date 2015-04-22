@@ -24,17 +24,22 @@ var promises = _.chain(fileList)
 Q.allSettled(promises)
   .then(function(results) {
     'use strict';
-    _(results).each(function(result) {
-      if (result.state === "fulfilled") {
-        var value = result.value;
-        console.log(value)
-      } else {
-        var reason = result.reason;
-        console.log(reason)
-      }
-    });
-
-  }) //.then(closeCasper)
+    var res = {};
+    _.chain(results)
+      .filter(function(e) {
+        return e.state === 'fulfilled' && e.value !== undefined;
+      }).map(function(e) {
+        var filePath = e.value.file,
+          googledName = e.value.name;
+        console.log('>>' + googledName + '<<');
+        return filePath && googledName ? [filePath, googledName] : undefined;
+      }).filter(function(e) {
+        return e !== undefined;
+      }).each(function(e) {
+        console.log(e);
+        // res[]
+      });
+  })
   .done();
 
 
