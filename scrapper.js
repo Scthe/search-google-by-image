@@ -1,13 +1,18 @@
 /*jslint indent: 2 */
 /* global casper*/
 
+var Q = require('q'),
+  id = 0;
+
 module.exports = execute;
 
 
-function execute(casper, filePath, callback) {
+function execute(casper, filePath) {
   'use strict';
   var url = 'https://images.google.com/',
-    currentStep = 0;
+    currentStep = 0,
+    execId = id++,
+    deferred = Q.defer();
 
   // Mask as browser that can use 'search by image' feature
   casper.userAgent('Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.120 Safari/537.36');
@@ -24,8 +29,9 @@ function execute(casper, filePath, callback) {
   evalWhenAvailable('#resultStats', 'getting the image name', function() {
     var xs = document.getElementsByClassName('_gUb'); // page element with name
     return xs === undefined || xs.length === 0 ? undefined : (xs[0]).textContent;
-  }, callback);
+  });
 
+  return deferred.promise;
 
 
   function clickWhenAvailable(selector, stepName) {
@@ -44,20 +50,21 @@ function execute(casper, filePath, callback) {
     });
   }
 
-  function evalWhenAvailable(selector, stepName, fToEval, callback) {
+  function evalWhenAvailable(selector, stepName, fToEval) {
     casper.waitForSelector(selector, function() {
       debug(this, currentStep, stepName);
-      var result;
-      result = this.evaluate(fToEval);
-      // console.log('>>' + result);
-
       ++currentStep;
-      callback(result);
+      var googledName = this.evaluate(fToEval);
+      console.log('>>' + googledName);
+      deferred.resolve({
+        file: filePath,
+        name: googledName
+      });
     });
   }
 
   function debug(casper, num, txt) {
-    // console.log(num + '>' + txt);
-    // casper.capture('cap' + num + '_' + txt + '.png');
+    console.log('[' + execId + '] step ' + num + ': ' + txt);
+    // casper.capture('debug/cap' + num + '_' + txt + '.png');
   }
 }

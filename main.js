@@ -1,20 +1,21 @@
-var sc = require('./scrapper'),
+var scrap = require('./scrapper'),
   casper = require('casper').create();
 
 casper.start();
 
 var i1 = 'test/data/Mona_Lisa,_by_Leonardo_da_Vinci.jpg';
 var i2 = 'test/data/TheRoad1.jpg';
-var img = i2;
+var img = i1;
 
-sc(casper, img, function(result) {
-  'use strict';
-  if (result !== undefined) {
-    console.log('>>>' + result);
-  } else {
-    console.log('>>>NULL');
-  }
-});
+scrap(casper, img)
+  .then(function(result) {
+    'use strict';
+    if (result !== undefined) {
+      console.log('>>>' + result);
+    } else {
+      console.log('>>>NULL');
+    }
+  });
 
 casper.run(function() {
   'use strict';

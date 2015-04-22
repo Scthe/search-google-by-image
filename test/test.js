@@ -9,25 +9,26 @@ describe('GoogleImagesScrapper', function(){
 'use strict';
 
   testWithFile('finds \"Mona Lisa\"',
-    'test/data/Mona_Lisa,_by_Leonardo_da_Vinci.jpg', function(imageTitle){
+    'test/data/Mona_Lisa,_by_Leonardo_da_Vinci.jpg', function(result){
 
-    expect(imageTitle).to.exist;
-    imageTitle = imageTitle.toLowerCase();
+    expect(result).to.exist;
+    expect(result.name).to.exist;
+    var imageTitle = result.name.toLowerCase();
     expect(imageTitle).to.contain('mona');
     expect(imageTitle).to.contain('lisa');
   });
 
   testWithFile('returns empty if image was not found', 'test/data/TheRoad1.jpg', function(imageTitle){
-      expect(imageTitle).to.not.exist;
+      expect(imageTitle.name).to.not.exist;
   });
 
   function testWithFile(testName,filePath, correctnesCheck){
-    it(testName,function(done){
+    it(testName,function(endTest){
       casper.start();
-      scrapper(casper,filePath,function(imageTitle){
-        correctnesCheck(imageTitle);
-        done();
-      });
+      scrapper(casper,filePath)
+      .then(correctnesCheck)
+      .then(endTest)
+      .done();
     });
   }
 
