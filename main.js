@@ -3,6 +3,7 @@ var scrap = require('./scrapper'),
   Q = require('q'),
   _ = require('underscore'),
   path = 'debug/data', // TODO provide through cmd
+  resultFile = 'result.json', // TODO provide through cmd
   fileList = fs.list(path),
   casper = require('casper').create();
 
@@ -24,21 +25,35 @@ var promises = _.chain(fileList)
 Q.allSettled(promises)
   .then(function(results) {
     'use strict';
-    var res = {};
+
+    var succesFiles = [];
+    // create object representing the results
     _.chain(results)
       .filter(function(e) {
         return e.state === 'fulfilled' && e.value !== undefined;
       }).map(function(e) {
         var filePath = e.value.file,
           googledName = e.value.name;
-        console.log('>>' + googledName + '<<');
+        // console.log('>>' + googledName + '<<');
         return filePath && googledName ? [filePath, googledName] : undefined;
       }).filter(function(e) {
         return e !== undefined;
       }).each(function(e) {
-        console.log(e);
-        // res[]
+        // console.log(e);
+        var fileName = e[0].split('/').pop().trim();
+        if (fileName) {
+          succesFiles.push({
+            path: fileName,
+            name: e[1]
+          });
+        }
       });
+    //
+    var res = {
+      path: path,
+      names: succesFiles
+    };
+    fs.write(resultFile, JSON.stringify(res, null, 2), 'w');
   })
   .done();
 
