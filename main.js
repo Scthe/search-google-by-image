@@ -1,12 +1,14 @@
 var scrap = require('./scrapper'),
+  fs = require('fs'),
+  Q = require('q'),
+  _ = require('underscore'),
+  path = 'debug/data', // TODO provide through cmd
+  fileList = fs.list(path),
   casper = require('casper').create();
 
 casper.start();
 
-var i1 = 'test/data/Mona_Lisa,_by_Leonardo_da_Vinci.jpg';
-var i2 = 'test/data/TheRoad1.jpg';
-var img = i1;
-
+/*
 scrap(casper, img)
   .then(function(result) {
     'use strict';
@@ -16,6 +18,25 @@ scrap(casper, img)
       console.log('>>>NULL');
     }
   });
+*/
+var promises = _.chain(fileList)
+  .map(appendDirPath)
+  .filter(function(e) {
+    return fs.isFile(e); // for some reason we have to wrap the call
+  })
+  // TODO filter by extension
+  .map(function(filePath) {
+    console.log('Opening google image page for: "' + filePath + '"');
+    return scrap(casper, filePath);
+  }).value();
+
+
+function appendDirPath(fileName) {
+  'use strict';
+  console.log('>>' + fileName)
+  return path + '/' + fileName; // TODO check for ending '/' in path
+}
+
 
 casper.run(function() {
   'use strict';
