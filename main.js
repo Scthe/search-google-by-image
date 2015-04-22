@@ -8,35 +8,40 @@ var scrap = require('./scrapper'),
 
 casper.start();
 
-/*
-scrap(casper, img)
-  .then(function(result) {
-    'use strict';
-    if (result !== undefined) {
-      console.log('>>>' + result);
-    } else {
-      console.log('>>>NULL');
-    }
-  });
-*/
 var promises = _.chain(fileList)
   .map(appendDirPath)
   .filter(function(e) {
+    'use strict';
     return fs.isFile(e); // for some reason we have to wrap the call
   })
   // TODO filter by extension
   .map(function(filePath) {
+    'use strict';
     console.log('Opening google image page for: "' + filePath + '"');
     return scrap(casper, filePath);
   }).value();
 
+Q.allSettled(promises)
+  .then(function(results) {
+    'use strict';
+    _(results).each(function(result) {
+      if (result.state === "fulfilled") {
+        var value = result.value;
+        console.log(value)
+      } else {
+        var reason = result.reason;
+        console.log(reason)
+      }
+    });
+
+  }) //.then(closeCasper)
+  .done();
+
 
 function appendDirPath(fileName) {
   'use strict';
-  console.log('>>' + fileName)
   return path + '/' + fileName; // TODO check for ending '/' in path
 }
-
 
 casper.run(function() {
   'use strict';
