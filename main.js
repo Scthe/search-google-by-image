@@ -2,72 +2,84 @@ var scrap = require('./scrapper'),
   fs = require('fs'),
   Q = require('q'),
   _ = require('underscore'),
-  path = 'debug/data', // TODO provide through cmd
-  resultFile = 'result.json', // TODO provide through cmd
-  fileList = fs.list(path),
+  baseDir, resultFilePath,
   casper = require('casper').create();
+
+// TODO add -v verbose flag
+
+
+parseCmdArgs(casper.cli.args);
+console.log('dir: "' + baseDir + '"');
+console.log('out: "' + resultFilePath + '"');
+var fileList = fs.list(baseDir);
 
 casper.start();
 
 var promises = _.chain(fileList)
   .map(appendDirPath)
-  .filter(function(e) {
+  .filter(function(e) { // TODO filter by extension too
     'use strict';
     return fs.isFile(e); // for some reason we have to wrap the call
-  })
-  // TODO filter by extension
-  .map(function(filePath) {
+  }).map(function(filePath) {
     'use strict';
     console.log('Opening google image page for: "' + filePath + '"');
     return scrap(casper, filePath);
   }).value();
 
 Q.allSettled(promises)
-  .then(function(results) {
-    'use strict';
-
-    var succesFiles = [];
-    // create object representing the results
-    _.chain(results)
-      .filter(function(e) {
-        return e.state === 'fulfilled' && e.value !== undefined;
-      }).map(function(e) {
-        var filePath = e.value.file,
-          googledName = e.value.name;
-        // console.log('>>' + googledName + '<<');
-        return filePath && googledName ? [filePath, googledName] : undefined;
-      }).filter(function(e) {
-        return e !== undefined;
-      }).each(function(e) {
-        // console.log(e);
-        var fileName = e[0].split('/').pop().trim();
-        if (fileName) {
-          succesFiles.push({
-            path: fileName,
-            name: e[1]
-          });
-        }
-      });
-    //
-    var res = {
-      path: path,
-      names: succesFiles
-    };
-    fs.write(resultFile, JSON.stringify(res, null, 2), 'w');
-  })
+  .then(_.partial(parseResults, _, resultFilePath))
   .done();
-
-
-function appendDirPath(fileName) {
-  'use strict';
-  return path + '/' + fileName; // TODO check for ending '/' in path
-}
 
 casper.run(function() {
   'use strict';
   // console.log('--END--');
   casper.exit();
 });
+
+function parseCmdArgs(args) {
+  'use strict';
+  if (args.length !== 2) {
+    console.log('Incorect arguments. Provide only 2 arguments:');
+    console.log('1) directory containing images to use');
+    console.log('2) output file');
+  } else {
+    // TODO add validation
+    baseDir = args[0];
+    resultFilePath = args[1];
+  }
+}
+
+function appendDirPath(fileName) {
+  'use strict';
+  return baseDir + '/' + fileName; // TODO check for ending '/' in path
+}
+
+function parseResults(results, outFile) {
+  'use strict';
+
+  var succesFiles = [];
+  // create object representing the results
+  _.chain(results)
+    .filter(function(e) {
+      return e.state === 'fulfilled' && e.value !== undefined &&
+        e.value.file && e.value.name;
+    }).each(function(e) {
+      // console.log(e);
+      var fileName = e.value.file.split('/').pop().trim();
+      if (fileName) {
+        succesFiles.push({
+          path: fileName,
+          name: e.value.name
+        });
+      }
+    });
+  //
+  var res = {
+    path: baseDir,
+    names: succesFiles
+  };
+  fs.write(outFile, JSON.stringify(res, null, 2), 'w');
+}
 
 /*
 casper.on('page.error', function(msg, trace) {
