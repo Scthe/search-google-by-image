@@ -64,7 +64,7 @@ function execute(casper, filePath) {
   }
 
   function debug(casper, num, txt) {
-    console.log('[' + execId + '] step ' + num + ': ' + txt);
+    // console.log('[' + execId + '] step ' + num + ': ' + txt);
     // casper.capture('debug/cap' + num + '_' + txt + '.png');
   }
 }

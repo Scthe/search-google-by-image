@@ -2,7 +2,9 @@ var scrap = require('./scrapper'),
   fs = require('fs'),
   Q = require('q'),
   _ = require('underscore'),
+  format = require('utils').format,
   baseDir, resultFilePath,
+  doneCount = 0,
   casper = require('casper').create();
 
 // TODO add -v verbose flag
@@ -22,9 +24,11 @@ var promises = _.chain(fileList)
     return fs.isFile(e); // for some reason we have to wrap the call
   }).map(function(filePath) {
     'use strict';
-    console.log('Opening google image page for: "' + filePath + '"');
-    return scrap(casper, filePath);
+    // console.log('Opening google image page for: "' + filePath + '"');
+    return scrap(casper, filePath).then(reportProgress);
   }).value();
+
+console.log('(this may take a while, I will update You with progress)');
 
 Q.allSettled(promises)
   .then(_.partial(parseResults, _, resultFilePath))
@@ -38,10 +42,13 @@ casper.run(function() {
 
 function parseCmdArgs(args) {
   'use strict';
+  // console.log(args)
+  // console.log(casper.cli.raw.args)
   if (args.length !== 2) {
     console.log('Incorect arguments. Provide only 2 arguments:');
     console.log('1) directory containing images to use');
     console.log('2) output file');
+    console.log('(Due too some casperjs bug the path cannot contain spaces)'); // TODO allow for spaces in paths
   } else {
     // TODO add validation
     baseDir = args[0];
@@ -60,10 +67,8 @@ function parseResults(results, outFile) {
   var succesFiles = [];
   // create object representing the results
   _.chain(results)
-    .filter(function(e) {
-      return e.state === 'fulfilled' && e.value !== undefined &&
-        e.value.file && e.value.name;
-    }).each(function(e) {
+    .filter(isResultOk)
+    .each(function(e) {
       // console.log(e);
       var fileName = e.value.file.split('/').pop().trim();
       if (fileName) {
@@ -79,6 +84,20 @@ function parseResults(results, outFile) {
     names: succesFiles
   };
   fs.write(outFile, JSON.stringify(res, null, 2), 'w');
+}
+
+function isResultOk(e) {
+  'use strict';
+  return e.state === 'fulfilled' && e.value !== undefined &&
+    e.value.file && e.value.name;
+}
+
+function reportProgress(lastResult) {
+  'use strict';
+  ++doneCount;
+  var resDesc = lastResult.name ? lastResult.name : '-';
+  console.log(format('Image %d/%d: "%s"', doneCount, promises.length, resDesc));
+  return lastResult;
 }
 
 /*
