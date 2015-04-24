@@ -5,7 +5,11 @@ var scrap = require('./scrapper'),
   format = require('utils').format,
   baseDir, resultFilePath,
   doneCount = 0,
-  casper = require('casper').create();
+  casper = require('casper').create({
+    onStepTimeout: throwTimeoutException,
+    onTimeout: throwTimeoutException,
+    onWaitTimeout: throwTimeoutException
+  });
 
 // TODO add -v verbose flag
 
@@ -13,21 +17,24 @@ var scrap = require('./scrapper'),
 parseCmdArgs(casper.cli.args);
 console.log('dir: "' + baseDir + '"');
 console.log('out: "' + resultFilePath + '"');
-var fileList = fs.list(baseDir);
-
-casper.start();
-
-var promises = _.chain(fileList)
+var fileList = fs.list(baseDir),
+  images = _.chain(fileList)
   .map(appendDirPath)
   .filter(function(e) { // TODO filter by extension too
     'use strict';
     return fs.isFile(e); // for some reason we have to wrap the call
-  }).map(function(filePath) {
-    'use strict';
-    // console.log('Opening google image page for: "' + filePath + '"');
-    return scrap(casper, filePath).then(reportProgress);
   }).value();
 
+casper.start();
+
+var promises = images.map(function(filePath) {
+  'use strict';
+  // console.log('Opening google image page for: "' + filePath + '"');
+  return scrap(casper, filePath)
+    .then(reportProgress);
+});
+
+console.log('Found ' + promises.length + ' images');
 console.log('(this may take a while, I will update You with progress)');
 
 Q.allSettled(promises)
@@ -64,6 +71,7 @@ function appendDirPath(fileName) {
 function parseResults(results, outFile) {
   'use strict';
 
+  console.log('Reading the results..');
   var succesFiles = [];
   // create object representing the results
   _.chain(results)
@@ -79,6 +87,7 @@ function parseResults(results, outFile) {
       }
     });
   //
+  console.log('Writing results to: "' + outFile + '"');
   var res = {
     path: baseDir,
     names: succesFiles
@@ -95,9 +104,17 @@ function isResultOk(e) {
 function reportProgress(lastResult) {
   'use strict';
   ++doneCount;
-  var resDesc = lastResult.name ? lastResult.name : '-';
+  var resDesc = lastResult && lastResult.name ? lastResult.name : '-';
   console.log(format('Image %d/%d: "%s"', doneCount, promises.length, resDesc));
   return lastResult;
+}
+
+function throwTimeoutException() {
+  'use strict';
+  reportProgress({
+    name: 'ERROR!'
+  });
+  throw 'Search timeout';
 }
 
 /*

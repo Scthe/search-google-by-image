@@ -39,15 +39,16 @@ function execute(casper, filePath) {
       debug(this, currentStep, stepName);
       this.click(selector);
       ++currentStep;
-    });
+    }, reject(casper));
   }
 
   function uploadFileWhenAvailable(selector, stepName) {
     casper.waitForSelector(selector, function() {
+      // console.log('    ' + filePath);
       debug(this, currentStep, stepName);
       this.page.uploadFile(selector, filePath);
       ++currentStep;
-    });
+    }, reject(casper));
   }
 
   function evalWhenAvailable(selector, stepName, fToEval) {
@@ -60,11 +61,19 @@ function execute(casper, filePath) {
         file: filePath,
         name: googledName
       });
-    });
+    }, reject(casper));
   }
 
   function debug(casper, num, txt) {
     // console.log('[' + execId + '] step ' + num + ': ' + txt);
     // casper.capture('debug/cap' + num + '_' + txt + '.png');
+  }
+
+  function reject(casper_) {
+    return function() {
+      // console.log('Rromise reject');
+      deferred.reject();
+      casper_.options.onWaitTimeout();
+    };
   }
 }
