@@ -52,10 +52,10 @@ function parseCmdArgs(args) {
   // console.log(args)
   // console.log(casper.cli.raw.args)
   if (args.length !== 2) {
-    console.log('Incorect arguments. Provide only 2 arguments:');
-    console.log('1) directory containing images to use');
-    console.log('2) output file');
+    console.log('usage: npm start -- IMAGES_DIRECTORY OUTPUT_FILE');
+    console.log('or: casperjs main.js -- IMAGES_DIRECTORY OUTPUT_FILE');
     console.log('(Due too some casperjs bug the path cannot contain spaces)'); // TODO allow for spaces in paths
+    console.log('Received: ' + args);
   } else {
     // TODO add validation
     baseDir = args[0];
