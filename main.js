@@ -3,27 +3,25 @@ var scrap = require('./scrapper'),
   Q = require('q'),
   _ = require('underscore'),
   format = require('utils').format,
-  baseDir, resultFilePath,
-  doneCount = 0,
   casper = require('casper').create({
     onStepTimeout: throwTimeoutException,
     onTimeout: throwTimeoutException,
     onWaitTimeout: throwTimeoutException
   });
 
+var baseDir, resultFilePath,
+  doneCount = 0,
+  acceptedImageExtensions = ['jpg', 'jpeg', 'png', 'gif']; // No TIFF cause file size, no BMP cause why?
+
 // TODO add -v verbose flag
 
 
 parseCmdArgs(casper.cli.args);
 console.log('dir: "' + baseDir + '"');
-console.log('out: "' + resultFilePath + '"');
-var fileList = fs.list(baseDir),
-  images = _.chain(fileList)
-  .map(appendDirPath)
-  .filter(function(e) { // TODO filter by extension too
-    'use strict';
-    return fs.isFile(e); // for some reason we have to wrap the call
-  }).value();
+console.log('out: "' + resultFilePath + '"'); // TODO check if out dir is valid
+
+var images = listImages(baseDir);
+console.log('Found ' + images.length + ' images');
 
 casper.start();
 
@@ -34,38 +32,79 @@ var promises = images.map(function(filePath) {
     .then(reportProgress);
 });
 
-console.log('Found ' + promises.length + ' images');
 console.log('(this may take a while, I will update You with progress)');
 
+var parseResults__ = _.partial(parseResults, _, resultFilePath);
 Q.allSettled(promises)
-  .then(_.partial(parseResults, _, resultFilePath))
+  .then(parseResults__)
   .done();
 
 casper.run(function() {
   'use strict';
   // console.log('--END--');
-  casper.exit();
+  casper.exit(0);
 });
+
+
+//
+// implementation functions
+//
 
 function parseCmdArgs(args) {
   'use strict';
-  // console.log(args)
+  // console.dir('$' + args);
+  // console.dir('$' + args.length);
+
   // console.log(casper.cli.raw.args)
   if (args.length !== 2) {
     console.log('usage: npm start -- IMAGES_DIRECTORY OUTPUT_FILE');
     console.log('or: casperjs main.js -- IMAGES_DIRECTORY OUTPUT_FILE');
     console.log('(Due too some casperjs bug the path cannot contain spaces)'); // TODO allow for spaces in paths
     console.log('Received: ' + args);
+    casper.exit(1);
   } else {
     // TODO add validation
-    baseDir = args[0];
-    resultFilePath = args[1];
+    baseDir = args[0].replace('\\', '/');
+    resultFilePath = args[1].replace('\\', '/');
   }
 }
 
-function appendDirPath(fileName) {
+function listImages(path) {
   'use strict';
-  return baseDir + '/' + fileName; // TODO check for ending '/' in path
+
+  // base path validation
+  path = path.trim();
+  if (path.length === 0 || path.search(/[\*\?]/) !== -1) {
+    console.log('ERROR: IMAGES_DIRECTORY is either just spaces or contains \'*\' or \'?\'');
+    casper.exit(1);
+  }
+
+  var fileList = fs.list(baseDir),
+    images = _.chain(fileList)
+    .map(appendDirPath)
+    .filter(fileFilter)
+    .value();
+
+  if (images.length === 0) {
+    console.log('ERROR: Could not find any files');
+    casper.exit(1);
+  }
+
+  // console.dir(">images:" + images);
+  return images;
+
+  function fileFilter(filePath) {
+    // filter by extension and if seems ok check if it is file or directory
+    var ext = filePath.substring(filePath.lastIndexOf('.') + 1); // wow, amazingly this does not throw exception
+    return _(acceptedImageExtensions).contains(ext) && fs.isFile(filePath);
+  }
+
+  function appendDirPath(fileName) {
+    if (endsWith(fileName, '\\') || endsWith(fileName, '/')) {
+      fileName = fileName.substring(0, fileName.length - 1);
+    }
+    return baseDir + '/' + fileName;
+  }
 }
 
 function parseResults(results, outFile) {
@@ -93,6 +132,9 @@ function parseResults(results, outFile) {
     names: succesFiles
   };
   fs.write(outFile, JSON.stringify(res, null, 2), 'w');
+
+  // TODO do not wrtie file in parse method
+  // TODO add some stats like X/ALL_COUNT -> 30% names found
 }
 
 function isResultOk(e) {
@@ -115,6 +157,11 @@ function throwTimeoutException() {
     name: 'ERROR!'
   });
   throw 'Search timeout';
+}
+
+function endsWith(str, suffix) {
+  'use strict';
+  return str.indexOf(suffix, str.length - suffix.length) !== -1;
 }
 
 /*
