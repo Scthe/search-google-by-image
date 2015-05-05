@@ -34,11 +34,14 @@ var promises = images.map(function(filePath) {
 
 console.log('(this may take a while, I will update You with progress)');
 
-var parseResults__ = _.partial(parseResults, _, resultFilePath);
+var writeAsJson__ = _.partial(writeAsJson, resultFilePath);
 Q.allSettled(promises)
-  .then(parseResults__)
+  .then(parseResults)
+  .then(writeAsJson__)
   .done();
 
+// there is no need to place this inside promise chain,
+// since casper uses it's own command queue
 casper.run(function() {
   'use strict';
   // console.log('--END--');
@@ -107,7 +110,7 @@ function listImages(path) {
   }
 }
 
-function parseResults(results, outFile) {
+function parseResults(results) {
   'use strict';
 
   console.log('Reading the results..');
@@ -125,16 +128,18 @@ function parseResults(results, outFile) {
         });
       }
     });
-  //
-  console.log('Writing results to: "' + outFile + '"');
-  var res = {
+
+  console.log(format('Found title for %d/%d images', succesFiles.length, results.length));
+  return {
     path: baseDir,
     names: succesFiles
   };
-  fs.write(outFile, JSON.stringify(res, null, 2), 'w');
+}
 
-  // TODO do not wrtie file in parse method
-  // TODO add some stats like X/ALL_COUNT -> 30% names found
+function writeAsJson(outFilePath, obj) {
+  'use strict';
+  console.log(format('Writing results to: \'%s\'', outFilePath));
+  fs.write(outFilePath, JSON.stringify(obj, null, 2), 'w');
 }
 
 function isResultOk(e) {
