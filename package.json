@@ -1,6 +1,17 @@
 {
   "name": "search-google-by-image",
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "author": "Marcin Matuszczyk",
+  "license": "MIT",
+  "description": "Search google images by image using headless browser. Retrieve 'best guess'",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Scthe/search-google-by-image.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Scthe/search-google-by-image/issues"
+  },
+  "homepage": "https://github.com/Scthe/search-google-by-image",
   "devDependencies": {
     "casper-chai": "^0.2.1",
     "chai": "^2.3.0",
