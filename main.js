@@ -1,4 +1,4 @@
-var scrap = require('./scrapper'),
+var imageSearch = require('./imageSearch'),
   fs = require('fs'),
   Q = require('q'),
   _ = require('underscore'),
@@ -28,7 +28,7 @@ casper.start();
 var promises = images.map(function(filePath) {
   'use strict';
   // console.log('Opening google image page for: "' + filePath + '"');
-  return scrap(casper, filePath)
+  return imageSearch(casper, filePath)
     .then(reportProgress);
 });
 

@@ -1,5 +1,5 @@
 {
-  "name": "search-by-image",
+  "name": "search-google-by-image",
   "version": "0.0.0",
   "devDependencies": {
     "casper-chai": "^0.2.1",
@@ -16,7 +16,7 @@
   },
   "scripts": {
     "start": "casperjs main.js ",
-    "jshint": "jshint main.js scrapper.js test",
+    "jshint": "jshint main.js imageSearch.js test",
     "test": "mocha-casperjs"
   }
 }

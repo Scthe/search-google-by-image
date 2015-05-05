@@ -3,9 +3,9 @@
 /* global describe, it, casper*/
 /* global expect */
 
-var scrapper = require('../scrapper');
+var imageSearch = require('../imageSearch');
 
-describe('GoogleImagesScrapper', function(){
+describe('Search google by image', function(){
 'use strict';
 
   testWithFile('finds \"Mona Lisa\"',
@@ -25,7 +25,7 @@ describe('GoogleImagesScrapper', function(){
   function testWithFile(testName,filePath, correctnesCheck){
     it(testName,function(endTest){
       casper.start();
-      scrapper(casper,filePath)
+      imageSearch(casper,filePath)
       .then(correctnesCheck)
       .then(endTest)
       .done();
