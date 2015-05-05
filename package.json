@@ -4,6 +4,7 @@
   "devDependencies": {
     "casper-chai": "^0.2.1",
     "chai": "^2.3.0",
+    "jshint": "^2.7.0",
     "mocha": "^2.2.4",
     "mocha-casperjs": "^0.5.3"
   },
@@ -15,6 +16,7 @@
   },
   "scripts": {
     "start": "casperjs main.js ",
+    "jshint": "jshint main.js scrapper.js test",
     "test": "mocha-casperjs"
   }
 }

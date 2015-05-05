@@ -1,6 +1,3 @@
-/*jslint indent: 2 */
-/* global casper*/
-
 var Q = require('q'),
   id = 0;
 
@@ -27,6 +24,7 @@ function execute(casper, filePath) {
 
   // when '#resultStats' is shown we are on the results page
   evalWhenAvailable('#resultStats', 'getting the image name', function() {
+    /* global document*/
     var xs = document.getElementsByClassName('_gUb'); // page element with name
     return xs === undefined || xs.length === 0 ? undefined : (xs[0]).textContent;
   });
