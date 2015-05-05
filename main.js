@@ -130,7 +130,7 @@ function parseResults(results) {
     });
 
   console.log(format('Found title for %d/%d images', succesFiles.length, results.length));
-  return {
+  return succesFiles.length === 0 ? undefined : {
     path: baseDir,
     names: succesFiles
   };
@@ -138,8 +138,12 @@ function parseResults(results) {
 
 function writeAsJson(outFilePath, obj) {
   'use strict';
-  console.log(format('Writing results to: \'%s\'', outFilePath));
-  fs.write(outFilePath, JSON.stringify(obj, null, 2), 'w');
+  if (obj) {
+    console.log(format('Writing results to: \'%s\'', outFilePath));
+    fs.write(outFilePath, JSON.stringify(obj, null, 2), 'w');
+  } else {
+    console.log('No results to write to file');
+  }
 }
 
 function isResultOk(e) {
