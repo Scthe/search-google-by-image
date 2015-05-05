@@ -1,5 +1,5 @@
 {
-  "name": "google-images-scrapper",
+  "name": "search-by-image",
   "version": "0.0.0",
   "devDependencies": {
     "casper-chai": "^0.2.1",
